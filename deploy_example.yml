@@ -1,0 +1,73 @@
+---
+- hosts: kafkarh7
+  vars:  
+    java_archive: jdk-8u191-linux-x64.tar.gz 
+    download_url: https://download.oracle.com/otn-pub/java/jdk/8u191-b12/2787e4a523244c269598db4e85c51e0c/jdk-8u191-linux-x64.tar.gz
+    path_base: /usr/local/java
+    path_archive: /usr/local/java/{{ java_archive }}
+    scala_archive: scala-2.12.8.tgz
+    scala_url: https://downloads.lightbend.com/scala/2.12.8/scala-2.12.8.tgz 
+    zookeeper_archive: zookeeper-3.4.12.tar.gz
+    zookeeper_url: http://mirror.cc.columbia.edu/pub/software/apache/zookeeper/zookeeper-3.4.12/zookeeper-3.4.12.tar.gz
+    kafka_archive: kafka_2.12-2.1.0.tgz
+    kafka_url: http://apache.mirrors.lucidnetworks.net/kafka/2.1.0/kafka_2.12-2.1.0.tgz
+
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: install libselinux-python
+      yum:
+        name: libselinux-python
+        state: present
+
+    - name: make necessary dirs for install
+      command: mkdir -p /usr/java
+
+    - name: install java jdk 1.8.x
+#     become: yes
+#     become_method: sudo
+      command: "wget -q -O {{java_archive}} -P {{ path_base }}  --no-check-certificate --no-cookies --header 'Cookie: oraclelicense=accept-securebackup-cookie' {{download_url}}"
+#     command: "wget -q -O {{java_archive}} --no-check-certificate --no-cookies --header 'Cookie: oraclelicense=accept-securebackup-cookie' {{download_url}} creates={{path_base}}"
+
+    - name: extract java
+      shell: tar -xvf /home/vagrant/jdk-8u191-linux-x64.tar.gz -C /usr/java
+
+    - name: create java symbolic link
+      shell: ln -s /usr/java/jdk1.8.0_191/bin/java /usr/bin/java
+#     file:
+#       src: /usr/java/jdk1.8.0_191/bin/java
+#       dest: /usr/bin/java
+#       owner: root
+#       group: root
+#       state: link
+
+    - name: configure alternatives for java
+      shell: alternatives --install /usr/bin/java java /usr/java/jdk1.8.0_191/bin/java 15
+
+    - name: download scala 2.12.x
+      command: "wget -q -O {{scala_archive}} {{scala_url}}" 
+
+    - name: download zookeeper
+      command: "wget -q -O {{zookeeper_archive}} {{zookeeper_url}}"
+
+    - namae: download kafka
+      command: "wget -q -O {{kafka_archive}} {{kafka_url}}"
+
+    - name: move downloads
+      shell: |
+        "for i in /home/vagrant/*;do tar xvf $i;done"
+        mv `ls -d /home/vagrant/jdk*` /usr/java
+        mv `ls -d /home/vagrant/*` /opt
+
+    - name: extract downloads
+      shell: |
+        tar -xvzf /opt/kafka_2.12-2.1.0.tgz -C /opt
+        tar -xvzf /opt/scala-2.12.8.tgz -C /opt
+        tar -xvzf /opt/zookeeper-3.4.12.tar.gz -C /opt
+
+#   - name: start zookeeper service
+#     shell: /opt/zookeeper-3.4.12/bin/zkServer.sh start
+
+    - name: start kafka server
+      shell:  /opt/kafka_2.12-2.1.0/bin/kafka-server-start.sh /opt/kafka_2.12-2.1.0/config/server.properties
+
