@@ -2,6 +2,7 @@
   vars:  
     custom_repo: true
     java_link: https://drive.google.com/open?id=1bSq7I3MY3SvY4MHfowEyNq3l-sFMJa8B
+    flink_archive: https://www.apache.org/dyn/closer.lua/flink/flink-1.7.1/flink-1.7.1-bin-hadoop28-scala_2.11.tgz
     java_archive: jdk-8u201-linux-x64.tar.gz
     download_url: https://download.oracle.com/otn-pub/java/jdk/8u201-b09/42970487e3af4f5aa5bca3f542482c60/jdk-8u201-linux-x64.tar.gz
     path_base: /usr/local/java
@@ -57,6 +58,20 @@
       shell: pip install gdown
     - name: use gdown to download jdk1.8.x from google drive
       shell: gdown https://drive.google.com/uc?id=1bSq7I3MY3SvY4MHfowEyNq3l-sFMJa8B
+    - name: download flink
+      shell: wget http://ftp.wayne.edu/apache/flink/flink-1.7.1/flink-1.7.1-bin-hadoop28-scala_2.11.tgz -P /tmp
+    - name: unpack flink
+      become: yes
+      become_method: sudo
+      unarchive:
+        src: /tmp/flink-1.7.1-bin-hadoop28-scala_2.11.tgz
+#       src: /opt/flink-1.7.1-bin-hadoop28-scala_2.11.tgz
+        dest: /opt
+#     shell: tar -xvzf /opt/flink-1.7.1-bin-hadoop28-scala_2.11.tgz
+      
+    - name: start flink
+      shell:  /opt/flink-1.7.1/bin/start-cluster.sh &
+
 #     shell: gdown https://drive.google.com/open?id=1bSq7I3MY3SvY4MHfowEyNq3l-sFMJa8B  --> change open?id to uc?id
 
 #   - name: use gdown to download and build local repo
