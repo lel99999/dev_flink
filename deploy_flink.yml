@@ -106,13 +106,9 @@
 #       gpgcheck=0\n' >> /etc/yum.repos.d/local.repo
  
 # roles:
-#   - umask
-#   - devtools
-#   - open_office
-#   - evince
-#   - stattransfer
-#   - sublime
-#   - ultra-edit
+#   - role1
+#   - role2
+
 # post_tasks:
 #   - name: Install texlive
 #     yum:
